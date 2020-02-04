@@ -1,15 +1,16 @@
 import React from 'react'
 import './App.css'
 import { ThemeContextProvider } from './contexts/theme'
+import { Frame } from './components/Frame'
 
-class App extends React.Component {
-  render() {
-    return (
+function App() {
+  return (
+    <div>
       <ThemeContextProvider>
-        <div>yo</div>
+        <Frame />
       </ThemeContextProvider>
-    )
-  }
+    </div>
+  )
 }
 
 export default App

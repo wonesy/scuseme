@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { TextField, makeStyles, Theme, createStyles } from '@material-ui/core'
 import DictionarySearcher from '../lib/dictionary/api'
-import { debounce } from '../util/debounce'
+import useDebounce from '../hooks/usedebounce'
 
 interface SearchProps {
     ds: DictionarySearcher
@@ -19,24 +19,29 @@ function Search(props: SearchProps) {
     const classes = useStyles()
     const [word, setWord] = useState('')
 
-    const debouncedSuggest = debounce(props.ds.suggest, 1000)
-
-    async function suggest() {
-        try {
-            const suggestions = await debouncedSuggest(word)
-            console.log('-> ' + suggestions)
-        } catch (e) {
-            console.log(e)
-        }
-    }
+    const debouncedWord = useDebounce(word, 1000)
 
     useEffect(() => {
+        async function suggest() {
+            try {
+                const suggestions = await props.ds.suggest(word)
+                console.log('-> ' + suggestions)
+            } catch (e) {
+                console.log(e)
+            }
+        }
+
+        if (!debouncedWord) {
+            return
+        }
+
         if (word.length <= 2) {
             return
         }
-        console.log(word)
+
         suggest()
-    })
+        // eslint-disable-next-line
+    }, [debouncedWord])
 
     return (
         <div className={classes.container}>

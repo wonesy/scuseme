@@ -22,7 +22,7 @@ function Search(props: SearchProps) {
     const debouncedWord = useDebounce(word, 1000)
 
     useEffect(() => {
-        async function suggest() {
+        async function suggest(word: string) {
             try {
                 const suggestions = await props.ds.suggest(word)
                 console.log('-> ' + suggestions)
@@ -31,17 +31,11 @@ function Search(props: SearchProps) {
             }
         }
 
-        if (!debouncedWord) {
+        if (!debouncedWord || debouncedWord.length <= 2) {
             return
         }
-
-        if (word.length <= 2) {
-            return
-        }
-
-        suggest()
-        // eslint-disable-next-line
-    }, [debouncedWord])
+        suggest(debouncedWord)
+    }, [debouncedWord, props.ds])
 
     return (
         <div className={classes.container}>

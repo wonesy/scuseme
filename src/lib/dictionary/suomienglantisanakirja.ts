@@ -1,5 +1,5 @@
 import DictionarySearcher from './api'
-import Translations from './model'
+import Translations, { DictionaryEntry, getPartOfSpeech } from './model'
 import axios, { AxiosInstance } from 'axios'
 import BeautifulDom from 'beautiful-dom'
 
@@ -8,6 +8,7 @@ export default class SEDictionarySearcher implements DictionarySearcher {
     private baseURL: string = ''
     private endpoint: string = ''
     private client: AxiosInstance = axios.create()
+    private defRegExp: RegExp = /\(.*\)/
 
     // state
     private lastWord: string = ''
@@ -59,6 +60,71 @@ export default class SEDictionarySearcher implements DictionarySearcher {
     }
 
     public search = async (word: string): Promise<Translations | undefined> => {
-        return undefined
+        const translations = {
+            originalEntry: {
+                word: word
+            } as DictionaryEntry,
+            translations: [] as DictionaryEntry[]
+        } as Translations
+
+        if (!this.lastDOMResults) {
+            return undefined
+        }
+
+        const results = this.lastDOMResults.getElementById('right')
+        if (!results) {
+            return undefined
+        }
+
+        let lang: string = 'FI'
+        let transLang: string = 'EN'
+        const langText = results.getElementsByTagName('h1')[0].innerText
+        if (langText.includes('in Finnish')) {
+            lang = 'EN'
+            transLang = 'FI'
+        }
+        translations.originalEntry.language = lang
+
+        results.getElementsByTagName('li').forEach(e => {
+            const word = e.getElementsByTagName('a')
+            if (!word || word.length === 0) {
+                return
+            }
+
+            const xlation = word[0].innerText
+            const defs = e.innerText
+
+            const regexres = this.defRegExp.exec(defs)
+            if (!regexres) {
+                return
+            }
+
+            const de = this.extractDictEntry(xlation, transLang, regexres[0])
+            translations.translations.push(de)
+        })
+
+        return translations
+    }
+
+    private extractDictEntry = (
+        word: string,
+        lang: string,
+        composedDefinition: string
+    ): DictionaryEntry => {
+        let de = {
+            word: word,
+            language: lang
+        } as DictionaryEntry
+
+        const words = composedDefinition
+            .replace('(', '')
+            .replace(')', '')
+            .split(' ')
+
+        de.partOfSpeech = getPartOfSpeech(words[0].replace(':', ''))
+        delete words[0]
+        const defOnly = words.join(' ').trimStart()
+        de.definition = defOnly
+        return de
     }
 }

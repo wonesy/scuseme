@@ -38,10 +38,8 @@ function Frame() {
 
     return (
         <div className={classes.container}>
-            <div>
-                <Paper className={classes.paper}>
-                    <Search ds={ds} />
-                </Paper>
+            <div className={classes.paper}>
+                <Search ds={ds} />
             </div>
             <div>
                 <Paper className={classes.paper}>b</Paper>

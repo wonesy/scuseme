@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { TextField, makeStyles, Theme, createStyles } from '@material-ui/core'
 import DictionarySearcher from '../lib/dictionary/api'
 import useDebounce from '../hooks/usedebounce'
+import Autocomplete from '@material-ui/lab/Autocomplete'
 
 interface SearchProps {
     ds: DictionarySearcher
@@ -18,34 +19,50 @@ const useStyles = makeStyles((theme: Theme) =>
 function Search(props: SearchProps) {
     const classes = useStyles()
     const [word, setWord] = useState('')
+    const [suggestions, setSuggestions] = useState([''])
 
-    const debouncedWord = useDebounce(word, 1000)
+    const debouncedWord = useDebounce(word, 500)
 
     useEffect(() => {
         async function suggest(word: string) {
             try {
-                const suggestions = await props.ds.suggest(word)
-                console.log('-> ' + suggestions)
+                const freshSuggestions = await props.ds.suggest(word)
+                setSuggestions(freshSuggestions)
+
+                const freshDefs = await props.ds.search(word)
+                console.log(freshDefs)
             } catch (e) {
                 console.log(e)
             }
         }
 
         if (!debouncedWord || debouncedWord.length <= 2) {
+            setSuggestions([])
             return
         }
+
         suggest(debouncedWord)
     }, [debouncedWord, props.ds])
 
     return (
         <div className={classes.container}>
-            <TextField
+            <Autocomplete
                 id="search-word"
-                label="Search"
-                variant="outlined"
-                style={{ width: '100%' }}
-                onChange={e => setWord(e.target.value)}
-            ></TextField>
+                freeSolo={true}
+                options={suggestions}
+                renderInput={params => (
+                    <div>
+                        <TextField
+                            {...params}
+                            label="search"
+                            margin="normal"
+                            variant="outlined"
+                            style={{ width: '100%' }}
+                            onChange={e => setWord(e.target.value)}
+                        />
+                    </div>
+                )}
+            />
         </div>
     )
 }

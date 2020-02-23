@@ -3,9 +3,11 @@ import { TextField, makeStyles, Theme, createStyles } from '@material-ui/core'
 import DictionarySearcher from '../lib/dictionary/api'
 import useDebounce from '../hooks/usedebounce'
 import Autocomplete from '@material-ui/lab/Autocomplete'
+import Translations from '../lib/dictionary/model'
 
 interface SearchProps {
     ds: DictionarySearcher
+    onSearch?: (xls: Translations | undefined) => void
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -30,7 +32,9 @@ function Search(props: SearchProps) {
                 setSuggestions(freshSuggestions)
 
                 const freshDefs = await props.ds.search(word)
-                console.log(freshDefs)
+                if (props.onSearch) {
+                    props.onSearch(freshDefs)
+                }
             } catch (e) {
                 console.log(e)
             }
@@ -42,7 +46,7 @@ function Search(props: SearchProps) {
         }
 
         suggest(debouncedWord)
-    }, [debouncedWord, props.ds])
+    }, [debouncedWord, props])
 
     return (
         <div className={classes.container}>

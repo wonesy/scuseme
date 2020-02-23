@@ -45,3 +45,26 @@ export const getPartOfSpeech = (desc: string): number => {
     }
     return 0
 }
+
+export const printPartOfSpeech = (pos: PartOfSpeech): string => {
+    switch (pos) {
+        case PartOfSpeech.Noun:
+            return 'noun'
+        case PartOfSpeech.Pronoun:
+            return 'pronoun'
+        case PartOfSpeech.Verb:
+            return 'verb'
+        case PartOfSpeech.Adjective:
+            return 'adjective'
+        case PartOfSpeech.Adverb:
+            return 'adverb'
+        case PartOfSpeech.Preposition:
+            return 'preposition'
+        case PartOfSpeech.Conjunction:
+            return 'conjuction'
+        case PartOfSpeech.Interjection:
+            return 'interjection'
+        default:
+            return 'unknown'
+    }
+}
